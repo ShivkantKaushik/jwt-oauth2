@@ -24,6 +24,22 @@ public class JwtTokenGenerator {
 
     private final JwtEncoder jwtEncoder;
 
+
+    public String generateRefreshToken(Authentication authentication){
+        log.info("[JwtTokenGenerator:generateRefreshToken] Token Creation Started for:{}", authentication.getName());
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("shivkant")
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plus(15,ChronoUnit.MINUTES))
+                .subject(authentication.getName())
+                .claim("scope", "REFRESH_TOKEN")
+                .build();
+
+       return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
+    }
+
     public String generateAccessToken(Authentication authentication) {
 
         log.info("[JwtTokenGenerator:generateAccessToken] Token Creation Started for:{}", authentication.getName());

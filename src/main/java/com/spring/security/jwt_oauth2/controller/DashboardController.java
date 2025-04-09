@@ -17,7 +17,7 @@ public class DashboardController {
     @PreAuthorize("hasAuthority('SCOPE_READ')")
     @GetMapping("/welcome-message")
     public ResponseEntity<String> getFirstWelcomeMessage(Authentication authentication){
-        return ResponseEntity.ok("Welcome to whoever you are:"+authentication.getName()+"with scope:"+authentication.getAuthorities());
+        return ResponseEntity.ok("Welcome to whoever you aresig:"+authentication.getName()+"with scope:"+authentication.getAuthorities());
     }
 
     //@PreAuthorize("hasRole('ROLE_MANAGER')")

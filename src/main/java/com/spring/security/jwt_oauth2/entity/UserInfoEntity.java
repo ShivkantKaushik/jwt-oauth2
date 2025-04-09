@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -29,5 +30,9 @@ public class UserInfoEntity {
 
     @Column(nullable = false, name = "ROLES")
     private String roles;
+
+    // One-to-many relationship with RefreshTokenEntity
+    @OneToMany( mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RefreshTokenEntity> refreshTokens;
 
 }

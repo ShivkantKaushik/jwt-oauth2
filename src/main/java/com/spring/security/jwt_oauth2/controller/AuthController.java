@@ -1,6 +1,7 @@
 package com.spring.security.jwt_oauth2.controller;
 
 import com.spring.security.jwt_oauth2.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,8 @@ public class AuthController {
 
     private final AuthService authService;
     @PostMapping("/sign-in")
-    public ResponseEntity<?> authenticateUser(Authentication authentication){
+    public ResponseEntity<?> authenticateUser(Authentication authentication, HttpServletResponse httpServletResponse){
 
-        return ResponseEntity.ok(authService.getJwtTokensAfterAuthentication(authentication));
+        return ResponseEntity.ok(authService.getJwtTokensAfterAuthentication(authentication, httpServletResponse));
     }
 }
