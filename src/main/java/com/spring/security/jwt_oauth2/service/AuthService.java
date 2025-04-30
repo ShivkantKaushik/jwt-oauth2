@@ -12,9 +12,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +76,15 @@ public class AuthService {
 
     private Cookie createRefreshTokenCookie(HttpServletResponse response, String refreshToken){
 
+        //From reddit
+//        All cookies are sent back as part of all requests to your server. Setting httponly means that the cookie is not readable by any JavaScript on the page but only used in http requests.
+//
+//                This makes sure that even if an attacker somehow manages to inject and execute a malicious script on your page they still won’t be able to access the cookie and it’s contents. That’s why it’s safer.
+//
+//        The cookie is however still sent back to your server with every request so you still have access to its contents server side. Using https also adds an additional layer of protection against man in the middle attacks.
+//
+//                You should also make sure that the domain for the cookie is properly set and restricted to just your domain.
+//
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(true);
@@ -82,5 +95,52 @@ public class AuthService {
         return refreshTokenCookie;
     }
 
+
+    public Object getAccessTokenUsingRefreshToken(String authorizationHeader) {
+
+        if( ! authorizationHeader.startsWith("Bearer")){
+            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Token type not bearer.");
+        }
+
+
+        final String refreshToken = authorizationHeader.substring(7);
+
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepo.findByRefreshToken(refreshToken)
+                .filter(token -> !token.isRevoked()).orElseThrow( () -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Refresh Token revoked.")
+                );
+
+
+        UserInfoEntity userInfoEntity = refreshTokenEntity.getUser();
+
+        Authentication authentication = createAuthenticationObject(userInfoEntity);
+
+        String accessToken = jwtTokenGenerator.generateAccessToken(authentication);
+
+        return AuthResponseDto.builder().accessToken(accessToken)
+                .accessTokenExpiry(1)
+                .userName(userInfoEntity.getUserName())
+                .tokenType(TokenTypeEnum.Bearer)
+                .build();
+
+
+    }
+
+
+    private static Authentication createAuthenticationObject(UserInfoEntity userInfoEntity){
+
+        String username = userInfoEntity.getUserName();
+        String password = userInfoEntity.getPassword();
+        String roles = userInfoEntity.getRoles();
+
+        GrantedAuthority[] grantedAuthorities = Arrays.stream(roles.split(",")).map(
+                String::trim
+        ).toArray(GrantedAuthority[]::new);
+
+
+        //this UsernamePasswordAuthenticationToken extends Authentication Interface
+        //so this can be used to generate authentication object
+        return new UsernamePasswordAuthenticationToken(username,password,Arrays.asList(grantedAuthorities));
+
+    }
 
 }

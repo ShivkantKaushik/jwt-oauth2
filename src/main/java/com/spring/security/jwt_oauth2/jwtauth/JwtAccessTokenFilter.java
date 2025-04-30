@@ -54,6 +54,20 @@ public class JwtAccessTokenFilter extends OncePerRequestFilter {
 
 
 
+
+    //Also, why return after doFilter()
+
+//    Great question! The return statement in your filter is not redundant—it actually serves a purpose even after calling filterChain.doFilter(request, response). Here's why:
+//    Why use return after filterChain.doFilter()?
+//    Prevents Further Execution
+//    Once the request is passed to the next filter using filterChain.doFilter(), we don't want any more logic in the current filter to execute.
+//    Without return, additional code in the filter might run unintentionally, possibly modifying the response.
+//    Avoids Unwanted Side Effects
+//    If there are logging statements, transformations, or other operations after doFilter(), they could alter the response unexpectedly.
+//            return ensures that the filter's job is done, and nothing more happens.
+
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

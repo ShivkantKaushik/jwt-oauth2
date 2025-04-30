@@ -15,6 +15,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class JwtTokenUtils {
 
+    private final UserInfoRepo useruserInfoRepo;
+
+
     public String getUserName(Jwt jwtToken){
         return jwtToken.getSubject();
     }
@@ -31,7 +34,6 @@ public class JwtTokenUtils {
         return Objects.requireNonNull(jwtToken.getExpiresAt()).isBefore(Instant.now());
     }
 
-    private final UserInfoRepo useruserInfoRepo;
     public UserDetails userDetails(String emailId){
         return useruserInfoRepo
                 .findByEmailId(emailId)
